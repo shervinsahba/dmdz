@@ -1,2 +1,6 @@
 
 .idea/
+
+pydmdz/__pycache__/
+
+pydmdz.egg-info/
