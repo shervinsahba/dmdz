@@ -28,7 +28,6 @@ class OptDMD(object):
 
         self.eigs = None        # DMD eigenvalues
         self.modes = None       # DMD eigenvectors
-        self.Atilde = None      # flow map
         self.amplitudes = None  # DMD mode amplitude vector
 
     @property
@@ -71,15 +70,20 @@ class OptDMD(object):
         return b
 
     @staticmethod
-    def optdmd(X, t, r, projected=True, eigs_guess=None):
-        U, _, _ = np.linalg.svd(X, full_matrices=False)
+    def optdmd(X, t, r, projected=True, eigs_guess=None, provided_U=None):
         if projected:
-            print('data projection: projected, U_r\'X')
-            U = U[:, :r]
+            if provided_U is None:
+                U, _, _ = np.linalg.svd(X, full_matrices=False)
+                U = U[:, :r]
+                print('data projection: projected, U_r\'X')
+            else:
+                U = provided_U
+                print('data projection: provided U')
             varpro_X = (U.conj().T@X).T
         else:
             print('data projection: none, X')
             varpro_X = X.T
+
 
         if eigs_guess is None:
             def generate_eigs_guess(U, X, t, r):
@@ -117,13 +121,16 @@ class OptDMD(object):
         modes[:, indices_small] = 0.0
         b[indices_small] = 0.0
 
+        if projected:
+            modes = U @ modes
+
         return eigs, modes, b
 
 
-    def fit(self, projected=True, eigs_guess=None, verbose=True):
+    def fit(self, projected=True, eigs_guess=None, verbose=True, provided_U=None):
         print("Computing optDMD on X, shape {} by {}.".format(*self.X.shape))
         self.eigs, self.modes, self.amplitudes = OptDMD.optdmd(self.X, self.timesteps, self.rank,
-                                                        projected=projected, eigs_guess=eigs_guess)
+                                                        projected=projected, eigs_guess=eigs_guess, provided_U=provided_U)
         return self
 
 
@@ -140,7 +147,6 @@ class OptDMD(object):
             mode = "default"
             indices = np.arange(len(self.eigs))
         self.eigs = self.eigs[indices]
-        self.Atilde = self.Atilde[indices, :]  # TODO check this! is it indices,: or :,indices ?
         self.modes = self.modes[:, indices]
         self.amplitudes = self.amplitudes[indices]
         print("Sorted DMD analysis by {}.".format(mode))
