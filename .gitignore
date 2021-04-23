@@ -4,3 +4,5 @@
 pydmdz/__pycache__/
 
 pydmdz.egg-info/
+
+.ipynb_checkpoints/
