@@ -8,3 +8,5 @@ pydmdz.egg-info/
 .ipynb_checkpoints/
 
 dmdz/__pycache__/
+
+.eggs/
