@@ -1,33 +1,46 @@
-from setuptools import setup, Command
+import io
 import os
 import sys
-import pydmdz
+from shutil import rmtree
+from setuptools import find_packages, setup, Command
+
+import dmdz  # used to populate some meta-data from __init__.py
 
 # Package meta-data.
-NAME = pydmdz.__title__
+NAME = dmdz.__title__
+VERSION = dmdz.__version__
+LICENSE = dmdz.__license__
+AUTHOR = dmdz.__author__
+EMAIL = dmdz.__mail__
+URL = 'https://github.com/shervinsahba/dmdz'
 DESCRIPTION = 'Dynamic Mode Decomposition Toolkit'
-URL = 'https://github.com/shervinsahba/pydmdz'
-MAIL = pydmdz.__mail__
-AUTHOR = pydmdz.__author__
-VERSION = pydmdz.__version__
-KEYWORDS='dynamic-mode-decomposition dmd mrdmd fbdmd cdmd'
-
-REQUIRED = [
-    'numpy', 'scipy', 'matplotlib',
+KEYWORDS = 'dynamic-mode-decomposition dmd fbdmd optdmd spdmd'
+REQUIRED_PYTHON = '>=3.8.0'
+REQUIREMENTS = ['numpy', 'scipy', 'matplotlib', 'svgutils']
+EXTRAS = {}
+CLASSIFIERS = [  # see https://pypi.org/classifiers/
+        'Development Status :: 3 - Alpha'
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.8',
+        'Intended Audience :: Science/Research',
+        'Topic :: Scientific/Engineering :: Mathematics'
 ]
 
-EXTRAS = {
-    'docs': ['Sphinx==1.4', 'sphinx_rtd_theme'],
-}
-
-LDESCRIPTION = (
-    "TBD"
-)
 
 here = os.path.abspath(os.path.dirname(__file__))
+
+# Import the README and use it as the long-description.
+# Note: this will only work if 'README.md' is present in your MANIFEST.in file!
+try:
+    with io.open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
+        long_description = '\n' + f.read()
+except FileNotFoundError:
+    long_description = DESCRIPTION
+
+
 class UploadCommand(Command):
     """Support setup.py upload."""
-
     description = 'Build and publish the package.'
     user_options = []
 
@@ -61,35 +74,26 @@ class UploadCommand(Command):
 
         sys.exit()
 
+
 setup(
     name=NAME,
     version=VERSION,
     description=DESCRIPTION,
-    long_description=LDESCRIPTION,
+    long_description=long_description,
     author=AUTHOR,
-    author_email=MAIL,
-	classifiers=[
-        'Development Status :: 5 - Production/Stable',
-        'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Intended Audience :: Science/Research',
-        'Topic :: Scientific/Engineering :: Mathematics'
-	],
-	keywords=KEYWORDS,
-	url=URL,
-	license='MIT',
-	packages=[NAME],
-    install_requires=REQUIRED,
-    extras_require=EXTRAS,
-    test_suite='nose.collector',
-	tests_require=['nose'],
-	include_package_data=True,
-	zip_safe=False,
-
-    # $ setup.py publish support.
-    cmdclass={
+    author_email=EMAIL,
+    url=URL,
+    packages=[NAME],
+    classifiers=CLASSIFIERS,
+    keywords=KEYWORDS,
+    license=LICENSE,
+    python_requires=REQUIRED_PYTHON,
+    install_requires=REQUIREMENTS,
+    extra_requires=EXTRAS,
+    zip_safe=False,
+    cmdclass={  # $ setup.py publish support.
         'upload': UploadCommand,
-    },)
+    },
+    use_scm_version=True,
+    setup_requires=['setuptools_scm'],
+)

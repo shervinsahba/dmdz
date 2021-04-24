@@ -1,8 +1,10 @@
 
 .idea/
 
-pydmdz/__pycache__/
-
-pydmdz.egg-info/
-
 .ipynb_checkpoints/
+
+dmdz/__pycache__/
+
+.eggs/
+
+dmdz.egg-info/

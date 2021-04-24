@@ -1,7 +1,4 @@
-"""
-PyDMD init
-"""
-__title__ = "pydmdz"
+__title__ = "dmdz"
 __author__ = "Shervin Sahba"
 __copyright__ = "Copyright 2020-"
 __license__ = "MIT"
