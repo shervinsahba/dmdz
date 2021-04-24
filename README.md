@@ -9,7 +9,7 @@ The package is in pre-alpha. Your mileage may vary.
 
 ## Install
 
-Within your desired virtual environment, run the following. For example, if you use `conda`. Run `conda activate <your_env>`. Then
+Within your desired virtual environment, run the following:
 ```
 git clone https://github.com/shervinsahba/dmdz
 cd dmdz && pip install .
