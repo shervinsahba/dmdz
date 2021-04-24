@@ -4,15 +4,15 @@ import sys
 from shutil import rmtree
 from setuptools import find_packages, setup, Command
 
-import pydmdz  # used to populate some meta-data from __init__.py
+import dmdz  # used to populate some meta-data from __init__.py
 
 # Package meta-data.
-NAME = pydmdz.__title__
-VERSION = pydmdz.__version__
-LICENSE = pydmdz.__license__
-AUTHOR = pydmdz.__author__
-EMAIL = pydmdz.__mail__
-URL = 'https://github.com/shervinsahba/pydmdz'
+NAME = dmdz.__title__
+VERSION = dmdz.__version__
+LICENSE = dmdz.__license__
+AUTHOR = dmdz.__author__
+EMAIL = dmdz.__mail__
+URL = 'https://github.com/shervinsahba/dmdz'
 DESCRIPTION = 'Dynamic Mode Decomposition Toolkit'
 KEYWORDS = 'dynamic-mode-decomposition dmd fbdmd optdmd spdmd'
 REQUIRED_PYTHON = '>=3.8.0'
