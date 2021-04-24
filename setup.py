@@ -16,7 +16,7 @@ URL = 'https://github.com/shervinsahba/dmdz'
 DESCRIPTION = 'Dynamic Mode Decomposition Toolkit'
 KEYWORDS = 'dynamic-mode-decomposition dmd fbdmd optdmd spdmd'
 REQUIRED_PYTHON = '>=3.8.0'
-REQUIREMENTS = ['numpy', 'scipy', 'matplotlib']
+REQUIREMENTS = ['numpy', 'scipy', 'matplotlib', 'svgutils']
 EXTRAS = {}
 CLASSIFIERS = [  # see https://pypi.org/classifiers/
         'Development Status :: 3 - Alpha'
