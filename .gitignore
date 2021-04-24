@@ -10,3 +10,5 @@ pydmdz.egg-info/
 dmdz/__pycache__/
 
 .eggs/
+
+dmdz.egg-info/
