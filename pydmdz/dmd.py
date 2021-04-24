@@ -8,7 +8,7 @@ import svgutils.compose as sc
 from .svd import SVD
 from .plots import plot_eigs, plot_singular_vals, plot_power_spectrum
 from .plotsupport import set_figdir
-from .timestamp import timestamp
+from .tools import timestamp
 
 import matplotlib.pyplot as plt
 from IPython.display import SVG
