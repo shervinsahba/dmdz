@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as plticker
 import matplotlib.cm as cm
 from matplotlib.colors import ListedColormap
+from scipy.interpolate import make_interp_spline
+
 from .tools import timestamp, timeprint
 
 # plt.rcdefaults()  # Reset the rcParams defaults
