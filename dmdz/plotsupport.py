@@ -111,17 +111,21 @@ def savefigz(fname="Untitled", dir=None, time=True, verbose=True, transparent=Fa
     return fig_filename
 
 
+
+
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # PLOT ADJUSTMENTS
 
 def xtick_locator(base, ax):
-    loc = plticker.MultipleLocator(base=base)  # this locator puts ticks at regular intervals
+    """ Places x-ticks at regular intervals in the given base."""
+    loc = plticker.MultipleLocator(base=base)
     ax.xaxis.set_major_locator(loc)
 
 
 def ytick_locator(base, ax):
-    loc = plticker.MultipleLocator(base=base)  # this locator puts ticks at regular intervals
+    """ Places y-ticks at regular intervals in the given base."""
+    loc = plticker.MultipleLocator(base=base)
     ax.yaxis.set_major_locator(loc)
 
 
@@ -131,6 +135,13 @@ def set_aspect_equal_ratio(ax):
     Useful where ax.set_aspect('equal') doesn't create square plots.
     """
     ax.set_aspect(1./ax.get_data_ratio())
+
+
+def spline(x, y, points=500, k=3):
+    """Interpolates a k-spline for x,y data. Can then use plt.plot(*spline(x,y))."""
+    spl = make_interp_spline(x, y, k=k)
+    x_new = np.linspace(min(x), max(x), points)
+    return x_new, spl(x_new)
 
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -164,3 +175,7 @@ cm_purples = colormap_create(128/256, 0/256, 128/256)
 cm_YPu = colormap_join(cm_purples, cm_yellows, d2=-1)
 cm_diverge = colormap_join(cm.binary, cm.binary, d1=-1)
 cm_diverge_r = colormap_join(cm.binary, cm.binary, d2=-1)
+
+def get_line_color(label, ax):
+    """Retrieves line color when given a line label and axis. If no label, use 'Line <number>'"""
+    return [l._color for l in ax.lines if l._label == label][0]
