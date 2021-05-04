@@ -26,7 +26,7 @@ def varpro2_opts(set_options_dict=None):
         "lambda_down": 3.0,
         "use_marquardt_scaling": True,
         "max_iterations": 30,
-        "tolerance": 1.0e-6,
+        "tolerance": 1.0e-1,
         "eps_stall": 1.0e-12,
         "compute_full_jacobian": True,
         "verbose": True,
