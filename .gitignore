@@ -8,3 +8,5 @@ dmdz/__pycache__/
 .eggs/
 
 dmdz.egg-info/
+
+tests/figs/
