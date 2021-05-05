@@ -15,9 +15,9 @@ from .tools import timestamp, timeprint
 # SET FONT SIZES
 
 rcparams_global = {
-    "figure.dpi": 120,
+    "figure.dpi": 200,
     "figure.facecolor": "white",
-    "figure.figsize": (7, 3),  # inches
+    "figure.figsize": (7, 4),  # inches
     # "figure.autolayout": True,
     "savefig.dpi": 450,
     "savefig.facecolor": "white",
@@ -47,31 +47,13 @@ rcparams_global.update(rcparams_font)
 plt.rcParams.update(rcparams_global)
 
 
-# TODO implement darkmode. find a way to quickly switch or print both plots
-# rcparams_darkmode = {
-#     "lines.color": "white",
-#     "patch.edgecolor": "white",
-#     "text.color": "white",
-#     "axes.facecolor": "white",
-#     "axes.edgecolor": "lightgray",
-#     "axes.labelcolor": "white",
-#     "xtick.color": "white",
-#     "ytick.color": "white",
-#     "grid.color": "lightgray",
-#     "figure.facecolor": "black",
-#     "figure.edgecolor": "black",
-#     "savefig.facecolor": "black",
-#     "savefig.edgecolor": "black"
-# }
+# TODO dark mode. find a way to quickly switch or creat both plots
 
-
+# TODO transparent mode. find a way to quickly switch or print create both plots
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # SAVING FIGS
-
-# SAVEFIG_KW = dict(facecolor='w', edgecolor='w', transparent=False, format="svg",
-#                              bbox_inches="tight", pad_inches=0.0, metadata=None)
 
 def set_figdir(dir=None, verbose=True):
     # sets a directory for figures.
@@ -84,10 +66,8 @@ def set_figdir(dir=None, verbose=True):
             dir = "./figs"
     if not os.path.isdir(dir):
         os.makedirs(dir)
-    if not os.path.isdir(dir+"/transparent"):
-        os.makedirs(dir+"/transparent")
     if verbose:
-        print("Fig directory set to %s" % dir)
+        print(f"Fig directory set to {dir}")
     return dir
 
 
@@ -99,7 +79,7 @@ def savefigz(fname="Untitled", dir=None, time=True, verbose=True, transparent=Fa
         figtime = timestamp()
         fname = figtime + '-' + fname
 
-    fig_filename = "%s/%s"%(dir, fname)
+    fig_filename = f"{dir}/{fname}"
     plt.tight_layout()
 
     if transparent:
@@ -108,11 +88,9 @@ def savefigz(fname="Untitled", dir=None, time=True, verbose=True, transparent=Fa
         plt.savefig(fig_filename, bbox_inches="tight")
 
     if verbose:
-        timeprint("Saved fig %s"%fig_filename)
+        timeprint(f"Saved fig {fig_filename}")
 
     return fig_filename
-
-
 
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -148,7 +126,7 @@ def spline(x, y, points=500, k=3):
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-# COLORMAP STUFF
+# COLOR STUFF
 
 def colormap_create(r,g,b,end=1):
     """
