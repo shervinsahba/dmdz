@@ -3,23 +3,21 @@ __all__ = ['DMD']
 import os
 import numpy as np
 import scipy.linalg
-
+import matplotlib.pyplot as plt
+import IPython.display
 import svgutils.compose as sc
+
 from .svd import SVD
 from .plots import plot_eigs, plot_singular_vals, plot_power_spectrum
 from .plotsupport import set_figdir
 from .tools import timestamp
 
-import matplotlib.pyplot as plt
-from IPython.display import SVG
 
 class DMD(object):
 
     def __init__(self, X, tlsq_rank=0, svd_rank=0, exact_dmd=False, optimized_b=False, dt=1):
-        # self.snapshots = X  # original snapshot data
         self.dt = dt
-        self.timesteps = np.arange(X.shape[1]) * self.dt
-
+        self.timesteps = np.arange(X.shape[1]) * self.dt  # TODO self.dt=/=1 may be an issue with plots
 
         self.svd_X = SVD.svd(X, -1, verbose=False)
         self.X = X
@@ -29,15 +27,15 @@ class DMD(object):
         self.svd_X2 = None
 
         self.tlsq_rank = tlsq_rank
-        self.svd_rank = svd_rank  # TODO fix naming
+        self.svd_rank = svd_rank        # TODO clarify naming conventions involving rank
         self.svd_actual_rank = None
         self.exact_dmd = exact_dmd
         self.optimized_b = optimized_b
         self.fbDMD = False
 
-        self.eigs = None  # DMD eigenvalues
-        self.modes = None  # DMD eigenvectors
-        self.Atilde = None  # flow map
+        self.eigs = None        # DMD discrete-time eigenvalues
+        self.modes = None       # DMD eigenvectors
+        self.Atilde = None      # flow map
         self.amplitudes = None  # DMD mode amplitude vector
 
     @property
@@ -49,8 +47,7 @@ class DMD(object):
         """
         Returns the continuous-time DMD eigenvalues.
         """
-        return np.log(self.eigs)/self.dt
-
+        return np.log(self.eigs)/self.dt  # TODO self.dt=/=1 may cause issues with plots
 
     @property
     def temporaldynamics(self):
@@ -171,10 +168,21 @@ class DMD(object):
             X2 = np.linalg.multi_dot([U1, self.Atilde, U1.conj().T, X1])
         return X2
 
-    def plot_eigs(self, marker_s=None, marker_c=None, unit_circle=True, colorbar=True, svd_rank=None,
-                   savefig=False, verbose=True, display=True):
-        out = plot_eigs(self.eigs, marker_s=marker_s, marker_c=marker_c, unit_circle=unit_circle, svd_rank=svd_rank,
-                  colorbar=colorbar, savefig=savefig, verbose=verbose)
+    def plot_eigs(self, mode='continuous', marker_s=None, marker_c=None, cmap=None, colorbar=False,
+                  svd_rank=None, savefig=False, verbose=True, display=True):
+        if marker_s is None:
+            marker_s = 50 * np.clip(self.amplitudes_mod / np.max(self.amplitudes_mod), 0.2, 1.0)
+        if marker_c is None:
+            marker_c = self.amplitudes_mod / np.max(self.amplitudes_mod)
+
+        eigs = None
+        if mode == 'continuous':
+            eigs = self.omega
+        elif mode == 'discrete':
+            eigs = self.eigs
+
+        out = plot_eigs(eigs, mode, marker_s=marker_s, marker_c=marker_c, cmap=cmap,
+                        colorbar=colorbar, svd_rank=svd_rank, savefig=savefig, verbose=verbose)
         if not display:
             plt.close()
         return out
@@ -185,37 +193,33 @@ class DMD(object):
             plt.close()
         return out
 
-    def plot_power_spectrum(self, savefig=False, verbose=True, display=True):
-        out = plot_power_spectrum(self.omega, self.amplitudes_mod, savefig=savefig, verbose=verbose)
+    def plot_power_spectrum(self, marker_s=None, marker_c=None, savefig=False, verbose=True, display=True):
+        out = plot_power_spectrum(self.omega, self.amplitudes_mod, marker_s=marker_s, marker_c=marker_c,
+                                  savefig=savefig, verbose=verbose)
         if not display:
             plt.close()
         return out
 
-    def plot_analysis(self):
+    def plot_analysis(self, mode='continuous', display=True):
         figdir = set_figdir(verbose=False)
-        fig_names = [
+        figure_name = f"{figdir}/{timestamp()}-analysis.svg"
+
+        fig_handles = [
             self.plot_singular_vals(savefig=True, verbose=False, display=False)[-1],
-            self.plot_eigs(colorbar=False, savefig=True, verbose=False, display=False)[-1],
+            self.plot_eigs(mode, savefig=True, verbose=False, display=False)[-1],
             self.plot_power_spectrum(savefig=True, verbose=False, display=False)[-1]
         ]
-        svgs = []
-        for name in fig_names:
-            svgs.append(sc.SVG(name + '.svg', fix_mpl=True))
-            os.remove("{}.svg".format(name))
 
-        figure_name = "{}/{}-analysis.svg".format(figdir, timestamp())
+        svgs = []
+        for fig in fig_handles:
+            svgs.append(sc.SVG(fig + '.svg', fix_mpl=True))
+            os.remove(f"{fig}.svg")
+
         sc.Figure(sum(svg.width for svg in svgs), max([svg.height for svg in svgs]),
-                  sc.Panel(
-                      svgs[0],
-                      sc.Text("(a)", 6, 16, size=11)
-                  ).move(0, 0),
-                  sc.Panel(
-                      svgs[1],
-                      sc.Text("(b)", 6, 16, size=11)
-                  ).move(svgs[0].width, 0),
-                  sc.Panel(
-                      svgs[2],
-                      sc.Text("(c)", 6, 16, size=11)
-                  ).move(svgs[0].width + svgs[1].width, 0)
+                  sc.Panel(svgs[0], sc.Text("(a)", 6, 16, size=11)).move(0, 0),
+                  sc.Panel(svgs[1], sc.Text("(b)", 6, 16, size=11)).move(svgs[0].width, 0),
+                  sc.Panel(svgs[2], sc.Text("(c)", 6, 16, size=11)).move(svgs[0].width + svgs[1].width, 0)
                   ).save(figure_name)
-        return SVG(figure_name)
+
+        if display:
+            IPython.display.display(IPython.display.SVG(figure_name))

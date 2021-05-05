@@ -3,17 +3,15 @@ __all__ = ['OptDMD']
 import os
 import numpy as np
 import scipy.linalg
-
+import matplotlib.pyplot as plt
+import IPython.display
 import svgutils.compose as sc
-from .svd import SVD
+
 from .plots import plot_eigs, plot_singular_vals, plot_power_spectrum
 from .plotsupport import set_figdir
+from .svd import SVD
 from .tools import timestamp
-
 from .varpro2 import varpro2, varpro2_opts, varpro2_dexpfun, varpro2_expfun
-
-import matplotlib.pyplot as plt
-from IPython.display import SVG
 
 
 class OptDMD(object):
@@ -26,7 +24,7 @@ class OptDMD(object):
 
         self.optimized_b = optimized_b
 
-        self.eigs = None        # DMD eigenvalues
+        self.eigs = None        # DMD continuous-time eigenvalues
         self.modes = None       # DMD eigenvectors
         self.amplitudes = None  # DMD mode amplitude vector
 
@@ -39,7 +37,7 @@ class OptDMD(object):
         """
         Returns the continuous-time DMD eigenvalues.
         """
-        return np.log(self.eigs)/1 #TODO this is log(eigs)/dt for DMD. What do I consider for OptDMD?
+        return self.eigs
 
     @property
     def temporaldynamics(self):
@@ -70,24 +68,22 @@ class OptDMD(object):
         return b
 
     @staticmethod
-    def optdmd(X, t, r, projected=True, eigs_guess=None, provided_U=None):
+    def optdmd(X, t, r, projected=True, eigs_guess=None, U=None):
         if projected:
-            if provided_U is None:
+            if U is None:
                 U, _, _ = np.linalg.svd(X, full_matrices=False)
                 U = U[:, :r]
-                print('data projection: projected, U_r\'X')
+                print('data projection: U_r\'X')
             else:
-                U = provided_U
-                print('data projection: provided U')
+                print('data projection: U_provided\'X')
             varpro_X = (U.conj().T@X).T
         else:
             print('data projection: none, X')
             varpro_X = X.T
 
-
         if eigs_guess is None:
             def generate_eigs_guess(U, X, t, r):
-                UtX = U.conj().T@X;
+                UtX = U.conj().T@X
                 UtX1 = UtX[:, :-1]
                 UtX2 = UtX[:, 1:]
 
@@ -126,13 +122,11 @@ class OptDMD(object):
 
         return eigs, modes, b
 
-
-    def fit(self, projected=True, eigs_guess=None, verbose=True, provided_U=None):
+    def fit(self, projected=True, eigs_guess=None, U=None):
         print("Computing optDMD on X, shape {} by {}.".format(*self.X.shape))
         self.eigs, self.modes, self.amplitudes = OptDMD.optdmd(self.X, self.timesteps, self.rank,
-                                                        projected=projected, eigs_guess=eigs_guess, provided_U=provided_U)
+                                                               projected=projected, eigs_guess=eigs_guess, U=U)
         return self
-
 
     def sort_by(self, mode="eigs"):
         """
@@ -152,13 +146,18 @@ class OptDMD(object):
         print("Sorted DMD analysis by {}.".format(mode))
 
     def predict(self):
+        pass
         # TODO
-        return None
 
-    def plot_eigs(self, marker_s=None, marker_c=None, unit_circle=True, colorbar=True, svd_rank=None,
-                   savefig=False, verbose=True, display=True):
-        out = plot_eigs(self.eigs, marker_s=marker_s, marker_c=marker_c, unit_circle=unit_circle, svd_rank=svd_rank,
-                  colorbar=colorbar, savefig=savefig, verbose=verbose)
+    def plot_eigs(self, marker_s=None, marker_c=None, cmap=None, colorbar=False, svd_rank=None,
+                  savefig=False, verbose=True, display=True):
+        if marker_s is None:
+            marker_s = 50 * np.clip(self.amplitudes_mod / np.max(self.amplitudes_mod), 0.2, 1.0)
+        if marker_c is None:
+            marker_c = self.amplitudes_mod / np.max(self.amplitudes_mod)
+
+        out = plot_eigs(self.eigs, 'continuous', marker_s=marker_s, marker_c=marker_c, cmap=cmap,
+                        colorbar=colorbar, svd_rank=svd_rank, savefig=savefig, verbose=verbose)
         if not display:
             plt.close()
         return out
@@ -170,36 +169,31 @@ class OptDMD(object):
         return out
 
     def plot_power_spectrum(self, savefig=False, verbose=True, display=True):
-        out = plot_power_spectrum(self.omega, self.amplitudes_mod, savefig=savefig, verbose=verbose)
+        out = plot_power_spectrum(self.eigs, self.amplitudes_mod, savefig=savefig, verbose=verbose)
         if not display:
             plt.close()
         return out
 
-    def plot_analysis(self):
+    def plot_analysis(self, display=True):
         figdir = set_figdir(verbose=False)
-        fig_names = [
+        figure_name = f"{figdir}/{timestamp()}-analysis.svg"
+
+        fig_handles = [
             self.plot_singular_vals(savefig=True, verbose=False, display=False)[-1],
-            self.plot_eigs(colorbar=False, savefig=True, verbose=False, display=False)[-1],
+            self.plot_eigs(savefig=True, verbose=False, display=False)[-1],
             self.plot_power_spectrum(savefig=True, verbose=False, display=False)[-1]
         ]
-        svgs = []
-        for name in fig_names:
-            svgs.append(sc.SVG(name + '.svg', fix_mpl=True))
-            os.remove("{}.svg".format(name))
 
-        figure_name = "{}/{}-analysis.svg".format(figdir, timestamp())
+        svgs = []
+        for fig in fig_handles:
+            svgs.append(sc.SVG(fig + '.svg', fix_mpl=True))
+            os.remove(f"{fig}.svg")
+
         sc.Figure(sum(svg.width for svg in svgs), max([svg.height for svg in svgs]),
-                  sc.Panel(
-                      svgs[0],
-                      sc.Text("(a)", 6, 16, size=11)
-                  ).move(0, 0),
-                  sc.Panel(
-                      svgs[1],
-                      sc.Text("(b)", 6, 16, size=11)
-                  ).move(svgs[0].width, 0),
-                  sc.Panel(
-                      svgs[2],
-                      sc.Text("(c)", 6, 16, size=11)
-                  ).move(svgs[0].width + svgs[1].width, 0)
+                  sc.Panel(svgs[0], sc.Text("(a)", 6, 16, size=11)).move(0, 0),
+                  sc.Panel(svgs[1], sc.Text("(b)", 6, 16, size=11)).move(svgs[0].width, 0),
+                  sc.Panel(svgs[2], sc.Text("(c)", 6, 16, size=11)).move(svgs[0].width + svgs[1].width, 0)
                   ).save(figure_name)
-        return SVG(figure_name)
+
+        if display:
+            IPython.display.display(IPython.display.SVG(figure_name))
