@@ -1,6 +1,7 @@
 import datetime
 import numpy as np
 
+
 def print_array(x, precision=6, suppress=True):
     """
     Pretty prints a numpy array to the given precision.
@@ -24,8 +25,8 @@ def timeprint(string=None, delimiter=": "):
     Print timestamp followed by optional string predended by delimiter.
     e.g. timestamp_print('foo') prints "YYYYmmDDTHHMMSS: foo"
     :param string:
-    :param delimiter: Delimiter between timestamp and print message. By default ": ". Note that it includes the space character.
+    :param delimiter: Delimiter between timestamp and print message. Default is ": ".
     """
     if string:
         string = delimiter+string
-    print("%s%s" % (timestamp(),string))
+    print(f"{timestamp()}{string}")
