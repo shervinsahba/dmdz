@@ -52,7 +52,7 @@ def plot_singular_vals(singular_vals, savefig=False, verbose=True):
 
 
 def plot_eigs(eigs, mode, marker_s=None, marker_c=None, cmap=None, colorbar=False,
-              svd_rank=None, savefig=False, verbose=True):
+              svd_rank=None, savefig=False, fit_parabola=True, verbose=True):
 
     if svd_rank is None:
         svd_rank = len(eigs)
@@ -81,6 +81,14 @@ def plot_eigs(eigs, mode, marker_s=None, marker_c=None, cmap=None, colorbar=Fals
         xtick_locator(1, ax)
         set_aspect_equal_ratio(ax)
 
+        if fit_parabola:
+            xp = np.linspace(np.min(eigs.imag), np.max(eigs.imag), 100)
+            pfit = np.poly1d(np.polyfit(eigs.imag, eigs.real, 2))
+            xp_shift = eigs.real[idx][-1]  # TODO this idx is out of scope. It depends on amplitudes_mod.
+            print(f"parabolic fit: {pfit}, recentered to origin and retranslated by {xp_shift}")
+            ax.plot(pfit(xp) - pfit(0) + xp_shift, xp, color='b', linewidth=1, linestyle='--')
+            plt.text(0.65, 0.85, f"$p={pfit.coefficients[0]:0.3f}\omega_2 {xp_shift:+0.3f}$", fontsize=11, transform=ax.transAxes)
+
 
     elif mode == 'discrete':
         ax.add_artist(plt.Circle((0., 0.), 1., color='purple', fill=False,
@@ -101,7 +109,7 @@ def plot_eigs(eigs, mode, marker_s=None, marker_c=None, cmap=None, colorbar=Fals
         cax.set_ylabel(r'$|b|$', rotation=0)
 
     if svd_rank:
-        plt.text(0.85, 0.9, f"$r={svd_rank}$", fontsize=10, transform=ax.transAxes)
+        plt.text(0.65, 0.9, f"$r={svd_rank}$", fontsize=11, transform=ax.transAxes)
 
     if savefig:
         fig_filename = savefigz("eigs", verbose=verbose)

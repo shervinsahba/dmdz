@@ -157,7 +157,7 @@ class OptDMD(object):
             marker_c = self.amplitudes_mod / np.max(self.amplitudes_mod)
 
         out = plot_eigs(self.eigs, 'continuous', marker_s=marker_s, marker_c=marker_c, cmap=cmap,
-                        colorbar=colorbar, svd_rank=svd_rank, savefig=savefig, verbose=verbose)
+                        colorbar=colorbar, svd_rank=svd_rank, savefig=savefig, fit_parabola=True, verbose=verbose)
         if not display:
             plt.close()
         return out

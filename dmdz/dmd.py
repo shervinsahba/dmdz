@@ -182,7 +182,7 @@ class DMD(object):
             eigs = self.eigs
 
         out = plot_eigs(eigs, mode, marker_s=marker_s, marker_c=marker_c, cmap=cmap,
-                        colorbar=colorbar, svd_rank=svd_rank, savefig=savefig, verbose=verbose)
+                        colorbar=colorbar, svd_rank=svd_rank, savefig=savefig, fit_parabola=True, verbose=verbose)
         if not display:
             plt.close()
         return out
