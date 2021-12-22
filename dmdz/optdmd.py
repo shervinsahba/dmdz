@@ -68,17 +68,20 @@ class OptDMD(object):
         return b
 
     @staticmethod
-    def optdmd(X, t, r, projected=True, eigs_guess=None, U=None):
+    def optdmd(X, t, r, projected=True, eigs_guess=None, U=None, verbose=True):
         if projected:
             if U is None:
                 U, _, _ = np.linalg.svd(X, full_matrices=False)
                 U = U[:, :r]
-                print('data projection: U_r\'X')
+                if verbose:
+                    print('data projection: U_r\'X')
             else:
-                print('data projection: U_provided\'X')
+                if verbose:
+                    print('data projection: U_provided\'X')
             varpro_X = (U.conj().T@X).T
         else:
-            print('data projection: none, X')
+            if verbose:
+                print('data projection: none, X')
             varpro_X = X.T
 
         if eigs_guess is None:
@@ -101,12 +104,18 @@ class OptDMD(object):
                 return eigs_guess
 
             eigs_guess = generate_eigs_guess(U, X, t, r)
-            print("eigs_guess: generated eigs seed for varpro2.")
+            if verbose:
+                print("eigs_guess: generated eigs seed for varpro2.")
         else:
-            print("eigs_guess: user provided eigs seed for varpro2.")
+            if verbose:
+                print("eigs_guess: user provided eigs seed for varpro2.")
 
+        if verbose:
+            options = {"verbose" : True}
+        else:
+            options = {"verbose" : False}
         modes, eigs, eig_array, error, iteration, convergence_status = varpro2(varpro_X, t, varpro2_expfun,
-                                                                               varpro2_dexpfun, eigs_guess)
+                                                                               varpro2_dexpfun, eigs_guess, options=options)
         modes = modes.T
 
         # normalize
@@ -122,10 +131,11 @@ class OptDMD(object):
 
         return eigs, modes, b
 
-    def fit(self, projected=True, eigs_guess=None, U=None):
-        print("Computing optDMD on X, shape {} by {}.".format(*self.X.shape))
+    def fit(self, projected=True, eigs_guess=None, U=None, verbose=True):
+        if verbose:
+            print("Computing optDMD on X, shape {} by {}.".format(*self.X.shape))
         self.eigs, self.modes, self.amplitudes = OptDMD.optdmd(self.X, self.timesteps, self.rank,
-                                                               projected=projected, eigs_guess=eigs_guess, U=U)
+                                                               projected=projected, eigs_guess=eigs_guess, U=U, verbose=verbose)
         return self
 
     def sort_by(self, mode="eigs"):
