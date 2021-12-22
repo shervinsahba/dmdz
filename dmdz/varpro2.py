@@ -123,8 +123,7 @@ def varpro2(y, t, phi_function, dphi_function, alpha_init,
     n_t = len(t)
     n_alpha = len(alpha_init)
 
-    if options is None:
-        options = varpro2_opts()
+    options = varpro2_opts(set_options_dict=options)
     lambda0 = options['lambda0']
 
     if linear_constraint:
